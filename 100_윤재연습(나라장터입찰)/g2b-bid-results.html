@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나라장터 개찰결과 조회 - 업종코드 1121 용역 (2025년)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .api-setup {
+            background: #f8f9fa;
+            padding: 25px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .api-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .api-info h3 {
+            color: #856404;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .api-info ol {
+            margin-left: 20px;
+            color: #856404;
+        }
+        
+        .api-info li {
+            margin: 5px 0;
+        }
+        
+        .api-info a {
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .api-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            font-weight: bold;
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .filter-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .btn-search {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-search:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .results {
+            padding: 25px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+        }
+        
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .error h3 {
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card .label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .result-table thead {
+            background: #667eea;
+            color: white;
+        }
+        
+        .result-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .result-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 13px;
+        }
+        
+        .result-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .result-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination button {
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .pagination button:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .filter-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .result-table {
+                font-size: 12px;
+            }
+            
+            .result-table th,
+            .result-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 나라장터 개찰결과 조회</h1>
+            <p>업종코드 1121 | 용역 계약 | 2025년도</p>
+        </div>
+        
+        <div class="api-setup">
+            <div class="api-info">
+                <h3>📋 사용 방법</h3>
+                <ol>
+                    <li><strong>프록시 서버 실행:</strong> PowerShell에서 <code>python proxy_server.py</code> 실행</li>
+                    <li><a href="https://www.data.go.kr/" target="_blank">공공데이터포털</a>에 접속하여 회원가입</li>
+                    <li>검색창에 "나라장터 낙찰정보서비스" 검색</li>
+                    <li>"조달청_나라장터 낙찰정보서비스" 선택 (ID: 15129397)</li>
+                    <li>"활용신청" 버튼 클릭하여 API 신청</li>
+                    <li>승인 후 "마이페이지 > 오픈API > 인증키 발급현황"에서 serviceKey 확인</li>
+                </ol>
+            </div>
+            
+            <div class="input-group">
+                <label for="apiKey">API 키 (serviceKey):</label>
+                <input type="text" id="apiKey" placeholder="공공데이터포털에서 발급받은 API 키를 입력하세요" />
+            </div>
+            
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label for="startDate">시작일:</label>
+                    <input type="date" id="startDate" value="2025-01-01" />
+                </div>
+                
+                <div class="filter-group">
+                    <label for="endDate">종료일:</label>
+                    <input type="date" id="endDate" value="2025-01-31" />
+                </div>
+                
+                <div class="filter-group">
+                    <label for="industryCode">업종코드 (선택):</label>
+                    <input type="text" id="industryCode" value="" placeholder="1121 (비워두면 전체)" />
+                </div>
+                
+                <div class="filter-group">
+                    <label for="numOfRows">조회 개수:</label>
+                    <select id="numOfRows">
+                        <option value="10">10개</option>
+                        <option value="20" selected>20개</option>
+                        <option value="50">50개</option>
+                        <option value="100">100개</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="btn-search" onclick="searchBidResults()">🔍 개찰결과 조회</button>
+        </div>
+        
+        <div class="results" id="results"></div>
+    </div>
+    
+    <script>
+        let currentPage = 1;
+        let totalCount = 0;
+        
+        async function searchBidResults(page = 1) {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const industryCode = document.getElementById('industryCode').value.trim();
+            const startDate = document.getElementById('startDate').value.replace(/-/g, '');
+            const endDate = document.getElementById('endDate').value.replace(/-/g, '');
+            const numOfRows = document.getElementById('numOfRows').value;
+            
+            if (!apiKey) {
+                showError('API 키를 입력해주세요.', 'API 키가 없으시면 위의 안내에 따라 공공데이터포털에서 발급받으세요.');
+                return;
+            }
+            
+            if (!startDate || !endDate) {
+                showError('날짜를 선택해주세요.', '시작일과 종료일을 모두 선택해야 합니다.');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">⏳ 데이터를 불러오는 중입니다...</div>';
+            
+            currentPage = page;
+            
+            // API URL 구성 (프록시 서버 사용)
+            const apiUrl = 'http://localhost:8080/api';
+            const params = {
+                serviceKey: apiKey,
+                inqryBgnDt: startDate,
+                inqryEndDt: endDate,
+                pageNo: page,
+                numOfRows: numOfRows,
+                type: 'json'urlP
+            };
+            
+            // 업종코드가 입력된 경우에만 추가
+            if (industryCode) {
+                params.indsLclsCd = industryCode;
+            }
+            
+            const urlParams = new URLSearchParams(params);
+            
+            try {
+                const response = await fetch(`${apiUrl}?${params}`);
+                const data = await response.json();
+                
+                console.log('API Response:', data);
+                
+                // 응답 구조 확인
+                if (data.response) {
+                    const header = data.response.header;
+                    const body = data.response.body;
+                    
+                    if (header.resultCode === '00') {
+                        // 성공
+                        displayResults(body);
+                    } else if (header.resultCode === '03') {
+                        showError(`데이터 없음`, '해당 조건의 데이터가 없습니다. 날짜 범위를 조정해보세요.');
+                    } else {
+                        showError(`API 오류 (코드: ${header.resultCode})`, header.resultMsg || '알 수 없는 오류');
+                    }
+                } else {
+                    showError('예상치 못한 응답 형식', JSON.stringify(data, null, 2));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('API 호출 실패', error.message + '\n\nCORS 오류인 경우, 브라우저의 CORS 확장 프로그램을 설치하거나 백엔드 서버를 통해 API를 호출해야 합니다.');
+            }
+        }
+        
+        function displayResults(body) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (!body || !body.items) {
+                resultsDiv.innerHTML = '<div class="no-data">조회된 결과가 없습니다.</div>';
+                return;
+            }
+            
+            const items = Array.isArray(body.items) ? body.items : [body.items];
+            totalCount = body.totalCount || 0;
+            const numOfRows = parseInt(document.getElementById('numOfRows').value);
+            const totalPages = Math.ceil(totalCount / numOfRows);
+            
+            let html = `
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="number">${totalCount}</div>
+                        <div class="label">총 건수</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${currentPage}</div>
+                        <div class="label">현재 페이지</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${totalPages}</div>
+                        <div class="label">전체 페이지</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${items.length}</div>
+                        <div class="label">현재 표시</div>
+                    </div>
+                </div>
+                
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>공고명</th>
+                            <th>공고기관</th>
+                            <th>개찰일시</th>
+                            <th>낙찰자</th>
+                            <th>낙찰금액</th>
+                            <th>추정가격</th>
+                            <th>낙찰률</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            items.forEach((item, index) => {
+                const num = (currentPage - 1) * numOfRows + index + 1;
+                const bidAmt = parseInt(item.bidAmt || 0);
+                const presmptPrce = parseInt(item.presmptPrce || 0);
+                const bidRate = presmptPrce > 0 ? ((bidAmt / presmptPrce) * 100).toFixed(2) : 'N/A';
+                
+                html += `
+                    <tr>
+                        <td>${num}</td>
+                        <td>${item.bidNtceNm || 'N/A'}</td>
+                        <td>${item.ntceInsttNm || 'N/A'}</td>
+                        <td>${formatDateTime(item.opengDt)}</td>
+                        <td>${item.scsbidCorpNm || 'N/A'}</td>
+                        <td>${formatCurrency(bidAmt)}</td>
+                        <td>${formatCurrency(presmptPrce)}</td>
+                        <td>${bidRate}%</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            // 페이지네이션
+            if (totalPages > 1) {
+                html += '<div class="pagination">';
+                
+                // 이전 버튼
+                html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="searchBidResults(${currentPage - 1})">◀ 이전</button>`;
+                
+                // 페이지 번호
+                const startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, currentPage + 2);
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `<button class="${i === currentPage ? 'active' : ''}" onclick="searchBidResults(${i})">${i}</button>`;
+                }
+                
+                // 다음 버튼
+                html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="searchBidResults(${currentPage + 1})">다음 ▶</button>`;
+                
+                html += '</div>';
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function showError(title, message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="error">
+                    <h3>❌ ${title}</h3>
+                    <p style="white-space: pre-wrap;">${message}</p>
+                </div>
+            `;
+        }
+        
+        function formatCurrency(amount) {
+            if (!amount) return '0원';
+            return new Intl.NumberFormat('ko-KR', {
+                style: 'currency',
+                currency: 'KRW'
+            }).format(amount);
+        }
+        
+        function formatDateTime(dateStr) {
+            if (!dateStr) return 'N/A';
+            // YYYYMMDDHHMMSS 형식을 YYYY-MM-DD HH:MM으로 변환
+            const year = dateStr.substring(0, 4);
+            const month = dateStr.substring(4, 6);
+            const day = dateStr.substring(6, 8);
+            const hour = dateStr.substring(8, 10);
+            const minute = dateStr.substring(10, 12);
+            return `${year}-${month}-${day} ${hour}:${minute}`;
+        }
+        
+        // Enter 키로 검색
+        document.getElementById('apiKey').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchBidResults();
+            }
+        });
+    </script>
+</body>
+</html>

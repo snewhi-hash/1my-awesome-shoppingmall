@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한옥 정자 실시설계 시스템 v2.0</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Malgun Gothic', 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 { font-size: 2.2em; margin-bottom: 10px; }
+        .header p { font-size: 1.1em; opacity: 0.9; }
+        .header .version {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+        
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .control-item { display: flex; flex-direction: column; gap: 8px; }
+        .control-item label { font-weight: 600; color: #2c3e50; font-size: 0.95em; }
+        .control-item input, .control-item select {
+            padding: 10px 15px;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            font-size: 1em;
+            min-width: 120px;
+            transition: all 0.3s;
+        }
+        .control-item input:focus, .control-item select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            align-self: flex-end;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .layer-control {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            margin-top: 10px;
+        }
+        
+        .layer-control h4 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .layer-toggles {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85em;
+        }
+        
+        .layer-toggle input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #e9ecef;
+            padding: 0 30px;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab:hover {
+            color: #495057;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        
+        .content { padding: 40px; }
+        
+        .view { display: none; }
+        .view.active { display: block; }
+        
+        .drawing-container {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            overflow: auto;
+        }
+        
+        .drawing-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+        
+        svg { max-width: 100%; height: auto; }
+        
+        .info-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-item label {
+            display: block;
+            color: #6c757d;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+        
+        .info-item value {
+            display: block;
+            color: #2c3e50;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .download-section {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .legend {
+            background: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .legend h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-symbol {
+            width: 30px;
+            height: 20px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .detail-marker {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .detail-marker:hover circle {
+            fill: #e74c3c;
+        }
+        
+        .detail-marker:hover text {
+            fill: white;
+        }
+        
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; border-radius: 0; }
+            .header, .controls, .tabs, .download-section, .btn { display: none !important; }
+            .content { padding: 20px; }
+            .drawing-container { border: 1px solid #000; page-break-inside: avoid; }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5em; }
+            .control-group { gap: 15px; }
+            .tabs { padding: 0 15px; }
+            .tab { padding: 12px 20px; font-size: 0.9em; }
+            .content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="version">v2.0 - 실시설계 수준</div>
+            <h1>🏛️ 한옥 정자 실시설계 시스템</h1>
+            <p>전통 한옥 정자의 상세 설계도면 및 시공 정보</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <div class="control-item">
+                    <label for="frontBays">정면 칸 수</label>
+                    <input type="number" id="frontBays" min="1" max="10" value="2">
+                </div>
+                <div class="control-item">
+                    <label for="sideBays">측면 칸 수</label>
+                    <input type="number" id="sideBays" min="1" max="10" value="1">
+                </div>
+                <div class="control-item">
+                    <label for="roofType">지붕 형태</label>
+                    <select id="roofType">
+                        <option value="palgak">팔작지붕</option>
+                        <option value="matbae">맞배지붕</option>
+                        <option value="woojin">우진각지붕</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="generateDrawings()">도면 생성</button>
+            </div>
+            
+            <div class="layer-control">
+                <h4>📐 레이어 제어</h4>
+                <div class="layer-toggles">
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="layerDimensions" checked onchange="toggleLayer('dimensions')">
+                        <span>치수선</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="layerAnnotations" checked onchange="toggleLayer('annotations')">
+                        <span>주석</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="layerMaterials" checked onchange="toggleLayer('materials')">
+                        <span>재료 해칭</span>
+                    </label>
+                    <label class="layer-toggle">
+                        <input type="checkbox" id="layerDetails" checked onchange="toggleLayer('details')">
+                        <span>상세 마커</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('plan')">평면도</div>
+            <div class="tab" onclick="switchTab('section')">단면도</div>
+        </div>
+
+        <div class="content">
+            <!-- 평면도 뷰 -->
+            <div id="planView" class="view active">
+                <div class="info-panel">
+                    <h3>📐 설계 정보</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>정면 길이</label>
+                            <value id="planFrontLength">-</value>
+                        </div>
+                        <div class="info-item">
+                            <label>측면 길이</label>
+                            <value id="planSideLength">-</value>
+                        </div>
+                        <div class="info-item">
+                            <label>총 면적</label>
+                            <value id="planArea">-</value>
+                        </div>
+                        <div class="info-item">
+                            <label>기둥 개수</label>
+                            <value id="planColumns">-</value>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="drawing-container">
+                    <div class="drawing-wrapper">
+                        <svg id="planSvg" width="800" height="600"></svg>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <h4>범례 (Legend)</h4>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #000;"></div>
+                            <span>기둥 (Φ450mm)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjZDhkOGQ4Ii8+PGNpcmNsZSBjeD0iOCIgY3k9IjEyIiByPSIxLjUiIGZpbGw9IiNhMGEwYTAiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjE1IiByPSIxIiBmaWxsPSIjYTBhMGEwIi8+PC9zdmc+);"></div>
+                            <span>기단 화강석</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="border: 2px dashed #666;"></div>
+                            <span>처마선</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #d4d4d4;"></div>
+                            <span>초석 (600×600)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="download-section">
+                    <button class="btn btn-success" onclick="downloadPNG('plan')">PNG 다운로드</button>
+                    <button class="btn btn-info" onclick="downloadPDF()">PDF 인쇄/저장</button>
+                </div>
+            </div>
+
+            <!-- 단면도 뷰 -->
+            <div id="sectionView" class="view">
+                <div class="info-panel">
+                    <h3>📏 단면 정보</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>기둥 높이</label>
+                            <value id="sectionHeight">2,700mm</value>
+                        </div>
+                        <div class="info-item">
+                            <label>기단 높이</label>
+                            <value id="sectionBase">750mm</value>
+                        </div>
+                        <div class="info-item">
+                            <label>최고 높이</label>
+                            <value id="sectionTotal">-</value>
+                        </div>
+                        <div class="info-item">
+                            <label>지붕 형태</label>
+                            <value id="sectionRoof">-</value>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="drawing-container">
+                    <div class="drawing-wrapper">
+                        <svg id="sectionSvg" width="800" height="600"></svg>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <h4>범례 (Legend)</h4>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #000;"></div>
+                            <span>기둥 (Φ450mm)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #8b4513;"></div>
+                            <span>보/도리</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #666;"></div>
+                            <span>기와 지붕</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-symbol" style="background: #d4d4d4;"></div>
+                            <span>기단석</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="download-section">
+                    <button class="btn btn-success" onclick="downloadPNG('section')">PNG 다운로드</button>
+                    <button class="btn btn-info" onclick="downloadPDF()">PDF 인쇄/저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 설계 상수 (실제 치수, mm 단위)
+        const CONSTANTS = {
+            BAY_SIZE: 3000,              // 1칸 = 3000mm
+            COLUMN_HEIGHT: 2700,         // 기둥 높이 = 2700mm
+            COLUMN_DIAMETER: 450,        // 기둥 지름 = 450mm
+            BASE_HEIGHT: 750,            // 기단 높이 = 750mm
+            BASE_OVERHANG: 550,          // 기단 돌출 = 550mm
+            BASE_STONE_HEIGHT: 400,      // 기단석 높이 = 400mm
+            BASE_STONE_WIDTH: 450,       // 기단석 폭 = 450mm
+            STONE_SIZE: 600,             // 초석 크기 = 600×600mm
+            STONE_HEIGHT: 250,           // 초석 높이 = 250mm
+            EAVE_OVERHANG: 1200,         // 처마 돌출 = 1200mm
+            SCALE: 50,                   // 축척 1:50
+            ROOF_HEIGHT_RATIO: 0.4       // 지붕 높이 비율
+        };
+
+        const DRAW = {
+            toPixel: (mm) => mm / CONSTANTS.SCALE
+        };
+
+        let currentConfig = {
+            frontBays: 2,
+            sideBays: 1,
+            roofType: 'palgak'
+        };
+
+        let layerStates = {
+            dimensions: true,
+            annotations: true,
+            materials: true,
+            details: true
+        };
+
+        // SVG 패턴 정의
+        function createMaterialPatterns(svg) {
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            
+            // 소나무 목재 결
+            const woodPine = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+            woodPine.setAttribute('id', 'wood-pine');
+            woodPine.setAttribute('x', '0');
+            woodPine.setAttribute('y', '0');
+            woodPine.setAttribute('width', '10');
+            woodPine.setAttribute('height', '40');
+            woodPine.setAttribute('patternUnits', 'userSpaceOnUse');
+            woodPine.innerHTML = `
+                <rect width="10" height="40" fill="#d4a574"/>
+                <line x1="2" y1="0" x2="2" y2="40" stroke="#8b6f47" stroke-width="0.5"/>
+                <line x1="5" y1="0" x2="5" y2="40" stroke="#8b6f47" stroke-width="0.3"/>
+                <line x1="8" y1="0" x2="8" y2="40" stroke="#8b6f47" stroke-width="0.5"/>
+            `;
+            defs.appendChild(woodPine);
+
+            // 화강석 텍스처
+            const granite = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+            granite.setAttribute('id', 'granite');
+            granite.setAttribute('width', '50');
+            granite.setAttribute('height', '50');
+            granite.setAttribute('patternUnits', 'userSpaceOnUse');
+            granite.innerHTML = `
+                <rect width="50" height="50" fill="#d8d8d8"/>
+                <circle cx="8" cy="12" r="1.5" fill="#a0a0a0"/>
+                <circle cx="22" cy="8" r="1" fill="#a0a0a0"/>
+                <circle cx="35" cy="15" r="1.2" fill="#a0a0a0"/>
+                <circle cx="15" cy="35" r="0.8" fill="#a0a0a0"/>
+                <circle cx="40" cy="40" r="1.5" fill="#a0a0a0"/>
+            `;
+            defs.appendChild(granite);
+
+            // 기단석 해칭
+            const baseHatch = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+            baseHatch.setAttribute('id', 'base-hatch');
+            baseHatch.setAttribute('width', '8');
+            baseHatch.setAttribute('height', '8');
+            baseHatch.setAttribute('patternUnits', 'userSpaceOnUse');
+            baseHatch.setAttribute('patternTransform', 'rotate(45)');
+            baseHatch.innerHTML = `<line x1="0" y1="0" x2="0" y2="8" stroke="#999" stroke-width="1"/>`;
+            defs.appendChild(baseHatch);
+
+            svg.appendChild(defs);
+        }
+
+        // 탭 전환
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'View').classList.add('active');
+        }
+
+        // 레이어 토글
+        function toggleLayer(layerName) {
+            layerStates[layerName] = !layerStates[layerName];
+            document.querySelectorAll(`[data-layer="${layerName}"]`).forEach(el => {
+                el.style.display = layerStates[layerName] ? 'block' : 'none';
+            });
+        }
+
+        // 도면 생성
+        function generateDrawings() {
+            currentConfig.frontBays = parseInt(document.getElementById('frontBays').value);
+            currentConfig.sideBays = parseInt(document.getElementById('sideBays').value);
+            currentConfig.roofType = document.getElementById('roofType').value;
+
+            generatePlanView();
+            generateSectionView();
+            updateInfo();
+        }
+
+        // 평면도 생성
+        function generatePlanView() {
+            const svg = document.getElementById('planSvg');
+            svg.innerHTML = '';
+            createMaterialPatterns(svg);
+
+            const frontBays = currentConfig.frontBays;
+            const sideBays = currentConfig.sideBays;
+            const buildingWidth = frontBays * CONSTANTS.BAY_SIZE;
+            const buildingDepth = sideBays * CONSTANTS.BAY_SIZE;
+            const baseWidth = buildingWidth + CONSTANTS.BASE_OVERHANG * 2;
+            const baseDepth = buildingDepth + CONSTANTS.BASE_OVERHANG * 2;
+            const eaveWidth = buildingWidth + CONSTANTS.EAVE_OVERHANG * 2;
+            const eaveDepth = buildingDepth + CONSTANTS.EAVE_OVERHANG * 2;
+
+            const margin = 150;
+            const svgWidth = DRAW.toPixel(eaveWidth) + margin * 2;
+            const svgHeight = DRAW.toPixel(eaveDepth) + margin * 2.5;
+
+            svg.setAttribute('width', svgWidth);
+            svg.setAttribute('height', svgHeight);
+
+            const centerX = svgWidth / 2;
+            const centerY = svgHeight / 2;
+
+            // 레이어 생성
+            const materialLayer = createGroup(svg, 'materials');
+            const structureLayer = createGroup(svg, 'structure');
+            const dimensionLayer = createGroup(svg, 'dimensions');
+            const annotationLayer = createGroup(svg, 'annotations');
+
+            // 타이틀 블록
+            addTitleBlock(svg, '평면도 (Floor Plan)', `축척 1:${CONSTANTS.SCALE}`, 10, svgHeight - 80);
+
+            // 처마선
+            drawRect(materialLayer, 
+                centerX - DRAW.toPixel(eaveWidth) / 2,
+                centerY - DRAW.toPixel(eaveDepth) / 2,
+                DRAW.toPixel(eaveWidth),
+                DRAW.toPixel(eaveDepth),
+                { stroke: '#999', strokeWidth: 2, strokeDasharray: '10,5', fill: 'none' }
+            );
+
+            // 기단 (실선, 화강석 패턴)
+            const baseX = centerX - DRAW.toPixel(baseWidth) / 2;
+            const baseY = centerY - DRAW.toPixel(baseDepth) / 2;
+            
+            drawRect(materialLayer, baseX, baseY,
+                DRAW.toPixel(baseWidth), DRAW.toPixel(baseDepth),
+                { stroke: '#000', strokeWidth: 3, fill: 'url(#granite)' }
+            );
+
+            // 기단석 개별 표현
+            drawBaseStones(materialLayer, baseX, baseY, baseWidth, baseDepth);
+
+            // 기단 상부 마감 라벨
+            addLeaderNote(annotationLayer,
+                centerX + DRAW.toPixel(buildingWidth) / 2 + 70,
+                centerY - DRAW.toPixel(buildingDepth) / 2 + 30,
+                '기단 상부: 화강석 다듬돌\n(400×300×두께50)',
+                centerX + DRAW.toPixel(buildingWidth) / 2,
+                centerY - DRAW.toPixel(buildingDepth) / 2
+            );
+
+            // 건물 외곽선
+            drawRect(structureLayer,
+                centerX - DRAW.toPixel(buildingWidth) / 2,
+                centerY - DRAW.toPixel(buildingDepth) / 2,
+                DRAW.toPixel(buildingWidth),
+                DRAW.toPixel(buildingDepth),
+                { stroke: '#000', strokeWidth: 2.5, fill: 'none' }
+            );
+
+            // 칸 구분선
+            for (let i = 1; i < frontBays; i++) {
+                const x = centerX - DRAW.toPixel(buildingWidth) / 2 + i * DRAW.toPixel(CONSTANTS.BAY_SIZE);
+                drawLine(structureLayer, x, centerY - DRAW.toPixel(buildingDepth) / 2,
+                    x, centerY + DRAW.toPixel(buildingDepth) / 2,
+                    { stroke: '#666', strokeWidth: 1.5 });
+            }
+            for (let i = 1; i < sideBays; i++) {
+                const y = centerY - DRAW.toPixel(buildingDepth) / 2 + i * DRAW.toPixel(CONSTANTS.BAY_SIZE);
+                drawLine(structureLayer, centerX - DRAW.toPixel(buildingWidth) / 2, y,
+                    centerX + DRAW.toPixel(buildingWidth) / 2, y,
+                    { stroke: '#666', strokeWidth: 1.5 });
+            }
+
+            // 기둥 배치
+            for (let i = 0; i <= frontBays; i++) {
+                for (let j = 0; j <= sideBays; j++) {
+                    const x = centerX - DRAW.toPixel(buildingWidth) / 2 + i * DRAW.toPixel(CONSTANTS.BAY_SIZE);
+                    const y = centerY - DRAW.toPixel(buildingDepth) / 2 + j * DRAW.toPixel(CONSTANTS.BAY_SIZE);
+
+                    // 초석
+                    drawRect(materialLayer,
+                        x - DRAW.toPixel(CONSTANTS.STONE_SIZE) / 2,
+                        y - DRAW.toPixel(CONSTANTS.STONE_SIZE) / 2,
+                        DRAW.toPixel(CONSTANTS.STONE_SIZE),
+                        DRAW.toPixel(CONSTANTS.STONE_SIZE),
+                        { fill: 'url(#granite)', stroke: '#666', strokeWidth: 1.5 }
+                    );
+
+                    // 기둥 (목재 패턴 + 해치)
+                    const columnRadius = DRAW.toPixel(CONSTANTS.COLUMN_DIAMETER) / 2;
+                    drawCircle(materialLayer, x, y, columnRadius,
+                        { fill: 'url(#wood-pine)', stroke: '#000', strokeWidth: 2 }
+                    );
+                    
+                    // 기둥 해치 (나무결)
+                    for (let h = -columnRadius + 2; h < columnRadius; h += 4) {
+                        const lineLength = Math.sqrt(columnRadius * columnRadius - h * h) * 2;
+                        drawLine(materialLayer,
+                            x - lineLength / 2, y + h,
+                            x + lineLength / 2, y + h,
+                            { stroke: '#8b6f47', strokeWidth: 0.5, opacity: 0.5 }
+                        );
+                    }
+                    
+                    // 기둥 중심선
+                    drawLine(materialLayer, x - 5, y, x + 5, y, 
+                        { stroke: '#000', strokeWidth: 0.5, strokeDasharray: '2,2' });
+                    drawLine(materialLayer, x, y - 5, x, y + 5, 
+                        { stroke: '#000', strokeWidth: 0.5, strokeDasharray: '2,2' });
+
+                    // 모서리 기둥 라벨
+                    if ((i === 0 || i === frontBays) && (j === 0 || j === sideBays)) {
+                        addText(annotationLayer, 
+                            x + (i === 0 ? -30 : 30), 
+                            y + (j === 0 ? -20 : 20), 
+                            `Φ${CONSTANTS.COLUMN_DIAMETER}`,
+                            { fontSize: 9, fill: '#e74c3c', textAnchor: i === 0 ? 'end' : 'start',
+                              fontWeight: 'bold' }
+                        );
+                    }
+                }
+            }
+
+            // 정면 분합문
+            if (frontBays >= 2) {
+                const doorWidth = DRAW.toPixel(2400);
+                const frontY = centerY + DRAW.toPixel(buildingDepth) / 2;
+                
+                drawRect(structureLayer,
+                    centerX - doorWidth / 2, frontY - 4,
+                    doorWidth, 8,
+                    { fill: '#8b4513', stroke: '#000', strokeWidth: 1.5 }
+                );
+                
+                // 살대 패턴
+                for (let i = 0; i < 4; i++) {
+                    const panelX = centerX - doorWidth / 2 + i * (doorWidth / 4);
+                    for (let s = 0; s < 3; s++) {
+                        drawLine(structureLayer, panelX + 5, frontY - 2 + s * 1.5, 
+                            panelX + doorWidth / 4 - 5, frontY - 2 + s * 1.5,
+                            { stroke: '#654321', strokeWidth: 0.3 });
+                    }
+                }
+                
+                addText(annotationLayer, centerX, frontY + 15, 'W-01: 분합문 4짝 (2400×2100)',
+                    { fontSize: 9, textAnchor: 'middle', fill: '#666' });
+            }
+
+            // 치수선
+            const offsetY = 50;
+            drawDimensionLine(dimensionLayer,
+                centerX - DRAW.toPixel(buildingWidth) / 2,
+                centerY + DRAW.toPixel(buildingDepth) / 2 + offsetY,
+                centerX + DRAW.toPixel(buildingWidth) / 2,
+                centerY + DRAW.toPixel(buildingDepth) / 2 + offsetY,
+                `${buildingWidth.toLocaleString()}mm (${frontBays}칸 × 3,000mm)`
+            );
+
+            // 칸별 치수
+            for (let i = 0; i < frontBays; i++) {
+                const x1 = centerX - DRAW.toPixel(buildingWidth) / 2 + i * DRAW.toPixel(CONSTANTS.BAY_SIZE);
+                const x2 = x1 + DRAW.toPixel(CONSTANTS.BAY_SIZE);
+                drawDimensionLine(dimensionLayer, x1, 
+                    centerY + DRAW.toPixel(buildingDepth) / 2 + offsetY + 25,
+                    x2,
+                    centerY + DRAW.toPixel(buildingDepth) / 2 + offsetY + 25,
+                    '3,000'
+                );
+            }
+
+            const offsetX = 50;
+            drawDimensionLine(dimensionLayer,
+                centerX + DRAW.toPixel(buildingWidth) / 2 + offsetX,
+                centerY - DRAW.toPixel(buildingDepth) / 2,
+                centerX + DRAW.toPixel(buildingWidth) / 2 + offsetX,
+                centerY + DRAW.toPixel(buildingDepth) / 2,
+                `${buildingDepth.toLocaleString()}mm (${sideBays}칸)`,
+                true
+            );
+
+            // 기단 치수
+            drawDimensionLine(dimensionLayer,
+                centerX - DRAW.toPixel(baseWidth) / 2,
+                centerY + DRAW.toPixel(buildingDepth) / 2 + offsetY + 50,
+                centerX + DRAW.toPixel(baseWidth) / 2,
+                centerY + DRAW.toPixel(buildingDepth) / 2 + offsetY + 50,
+                `기단: ${baseWidth.toLocaleString()}mm`
+            );
+
+            // 방위 표시
+            drawCompass(svg, svgWidth - 60, 60);
+        }
+
+        // 기단석 그리기
+        function drawBaseStones(layer, baseX, baseY, baseWidth, baseDepth) {
+            const stoneWidth = CONSTANTS.BASE_STONE_WIDTH;
+            const stoneHeight = CONSTANTS.BASE_STONE_HEIGHT;
+            
+            const frontStones = Math.ceil(baseWidth / stoneWidth);
+            for (let i = 0; i < frontStones; i++) {
+                const x = baseX + i * DRAW.toPixel(stoneWidth);
+                const y = baseY + DRAW.toPixel(baseDepth) - DRAW.toPixel(stoneHeight);
+                drawRect(layer, x, y, DRAW.toPixel(stoneWidth), DRAW.toPixel(stoneHeight),
+                    { fill: 'none', stroke: '#666', strokeWidth: 1 });
+            }
+        }
+
+        // 단면도 생성
+        function generateSectionView() {
+            const svg = document.getElementById('sectionSvg');
+            svg.innerHTML = '';
+            createMaterialPatterns(svg);
+
+            const frontBays = currentConfig.frontBays;
+            const roofType = currentConfig.roofType;
+            const buildingWidth = frontBays * CONSTANTS.BAY_SIZE;
+            const roofHeight = buildingWidth * CONSTANTS.ROOF_HEIGHT_RATIO;
+            const totalHeight = CONSTANTS.BASE_HEIGHT + CONSTANTS.COLUMN_HEIGHT + roofHeight;
+
+            const margin = 100;
+            const svgWidth = DRAW.toPixel(buildingWidth + CONSTANTS.EAVE_OVERHANG * 2) + margin * 2;
+            const svgHeight = DRAW.toPixel(totalHeight + 500) + margin * 2;
+
+            svg.setAttribute('width', svgWidth);
+            svg.setAttribute('height', svgHeight);
+
+            const centerX = svgWidth / 2;
+            const groundY = svgHeight - margin;
+
+            // 타이틀 블록
+            addTitleBlock(svg, '단면도 (Section)', `축척 1:${CONSTANTS.SCALE}`, 10, svgHeight - 80);
+
+            // 지면선
+            drawLine(svg, margin, groundY, svgWidth - margin, groundY,
+                { stroke: '#8b4513', strokeWidth: 2 });
+
+            // 기단
+            const baseWidth = buildingWidth + CONSTANTS.BASE_OVERHANG * 2;
+            const baseX = centerX - DRAW.toPixel(baseWidth) / 2;
+            const baseY = groundY - DRAW.toPixel(CONSTANTS.BASE_HEIGHT);
+
+            drawRect(svg, baseX, baseY,
+                DRAW.toPixel(baseWidth), DRAW.toPixel(CONSTANTS.BASE_HEIGHT),
+                { fill: 'url(#base-hatch)', stroke: '#000', strokeWidth: 2 }
+            );
+
+            // 기단석 레이어
+            const stoneLayerHeight = DRAW.toPixel(CONSTANTS.BASE_STONE_HEIGHT);
+            for (let i = 0; i < Math.floor(CONSTANTS.BASE_HEIGHT / CONSTANTS.BASE_STONE_HEIGHT); i++) {
+                const y = groundY - i * stoneLayerHeight - stoneLayerHeight;
+                drawLine(svg, baseX, y, baseX + DRAW.toPixel(baseWidth), y,
+                    { stroke: '#666', strokeWidth: 1 });
+            }
+
+            // 기둥들
+            const columnWidth = DRAW.toPixel(CONSTANTS.COLUMN_DIAMETER);
+            const columnHeight = DRAW.toPixel(CONSTANTS.COLUMN_HEIGHT);
+
+            for (let i = 0; i <= frontBays; i++) {
+                const x = centerX - DRAW.toPixel(buildingWidth) / 2 + i * DRAW.toPixel(CONSTANTS.BAY_SIZE);
+                
+                // 초석
+                drawRect(svg, x - DRAW.toPixel(CONSTANTS.STONE_SIZE) / 2, baseY - DRAW.toPixel(CONSTANTS.STONE_HEIGHT),
+                    DRAW.toPixel(CONSTANTS.STONE_SIZE), DRAW.toPixel(CONSTANTS.STONE_HEIGHT),
+                    { fill: 'url(#granite)', stroke: '#666', strokeWidth: 1.5 });
+                
+                // 기둥
+                drawRect(svg, x - columnWidth / 2, baseY - columnHeight - DRAW.toPixel(CONSTANTS.STONE_HEIGHT),
+                    columnWidth, columnHeight,
+                    { fill: 'url(#wood-pine)', stroke: '#000', strokeWidth: 2 }
+                );
+                
+                // 해치
+                for (let h = 0; h < columnHeight; h += 8) {
+                    drawLine(svg, x - columnWidth / 2, baseY - h - DRAW.toPixel(CONSTANTS.STONE_HEIGHT),
+                        x + columnWidth / 2, baseY - h - DRAW.toPixel(CONSTANTS.STONE_HEIGHT),
+                        { stroke: '#8b6f47', strokeWidth: 0.5, opacity: 0.5 });
+                }
+            }
+
+            // 보/도리
+            const beamY = baseY - columnHeight - DRAW.toPixel(CONSTANTS.STONE_HEIGHT);
+            const beamWidth = DRAW.toPixel(buildingWidth);
+            const beamHeight = DRAW.toPixel(300);
+
+            drawRect(svg, centerX - beamWidth / 2, beamY - beamHeight,
+                beamWidth, beamHeight,
+                { fill: '#8b4513', stroke: '#000', strokeWidth: 2 }
+            );
+
+            // 지붕
+            const roofY = beamY - beamHeight;
+            const eaveWidth = buildingWidth + CONSTANTS.EAVE_OVERHANG * 2;
+            const roofPeakY = roofY - DRAW.toPixel(roofHeight);
+
+            if (roofType === 'palgak') {
+                drawPalgakRoof(svg, centerX, roofPeakY, roofY, DRAW.toPixel(eaveWidth));
+            } else if (roofType === 'matbae') {
+                drawMatbaeRoof(svg, centerX, roofPeakY, roofY, DRAW.toPixel(eaveWidth));
+            } else {
+                drawWoojinRoof(svg, centerX, roofPeakY, roofY, DRAW.toPixel(eaveWidth));
+            }
+
+            // 치수선
+            const leftX = baseX - 50;
+            drawDimensionLine(svg, leftX, baseY, leftX, groundY, `${CONSTANTS.BASE_HEIGHT}mm`, true);
+            drawDimensionLine(svg, leftX - 30, beamY, leftX - 30, baseY, `기둥: ${CONSTANTS.COLUMN_HEIGHT}mm`, true);
+            
+            const rightX = svgWidth - margin + 30;
+            drawDimensionLine(svg, rightX, roofPeakY, rightX, groundY, `총 높이: ${totalHeight.toFixed(0)}mm`, true);
+            
+            drawDimensionLine(svg,
+                centerX - DRAW.toPixel(buildingWidth) / 2, groundY + 40,
+                centerX + DRAW.toPixel(buildingWidth) / 2, groundY + 40,
+                `${buildingWidth.toLocaleString()}mm (${frontBays}칸)`
+            );
+        }
+
+        // 지붕 그리기 함수들
+        function drawPalgakRoof(svg, centerX, peakY, baseY, width) {
+            const halfWidth = width / 2;
+            const path = `
+                M ${centerX - halfWidth} ${baseY}
+                Q ${centerX - halfWidth * 0.7} ${baseY - 10}, ${centerX - halfWidth * 0.5} ${peakY + 20}
+                L ${centerX} ${peakY}
+                L ${centerX + halfWidth * 0.5} ${peakY + 20}
+                Q ${centerX + halfWidth * 0.7} ${baseY - 10}, ${centerX + halfWidth} ${baseY}
+                Z
+            `;
+            
+            const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathEl.setAttribute('d', path);
+            pathEl.setAttribute('fill', '#666');
+            pathEl.setAttribute('stroke', '#333');
+            pathEl.setAttribute('stroke-width', '2');
+            svg.appendChild(pathEl);
+
+            drawLine(svg, centerX - 20, peakY, centerX + 20, peakY,
+                { stroke: '#8b4513', strokeWidth: 4 });
+        }
+
+        function drawMatbaeRoof(svg, centerX, peakY, baseY, width) {
+            const halfWidth = width / 2;
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', `${centerX - halfWidth},${baseY} ${centerX},${peakY} ${centerX + halfWidth},${baseY}`);
+            polygon.setAttribute('fill', '#666');
+            polygon.setAttribute('stroke', '#333');
+            polygon.setAttribute('stroke-width', '2');
+            svg.appendChild(polygon);
+        }
+
+        function drawWoojinRoof(svg, centerX, peakY, baseY, width) {
+            const halfWidth = width / 2;
+            const peakWidth = width * 0.3;
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', `${centerX - halfWidth},${baseY} ${centerX - peakWidth/2},${peakY} ${centerX + peakWidth/2},${peakY} ${centerX + halfWidth},${baseY}`);
+            polygon.setAttribute('fill', '#666');
+            polygon.setAttribute('stroke', '#333');
+            polygon.setAttribute('stroke-width', '2');
+            svg.appendChild(polygon);
+        }
+
+        // SVG 유틸리티 함수들
+        function createGroup(svg, layerName) {
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('data-layer', layerName);
+            g.style.display = layerStates[layerName] ? 'block' : 'none';
+            svg.appendChild(g);
+            return g;
+        }
+
+        function drawRect(parent, x, y, width, height, style = {}) {
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', x);
+            rect.setAttribute('y', y);
+            rect.setAttribute('width', width);
+            rect.setAttribute('height', height);
+            Object.entries(style).forEach(([key, value]) => {
+                rect.setAttribute(key.replace(/[A-Z]/g, m => '-' + m.toLowerCase()), value);
+            });
+            parent.appendChild(rect);
+            return rect;
+        }
+
+        function drawCircle(parent, cx, cy, r, style = {}) {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', cx);
+            circle.setAttribute('cy', cy);
+            circle.setAttribute('r', r);
+            Object.entries(style).forEach(([key, value]) => {
+                circle.setAttribute(key.replace(/[A-Z]/g, m => '-' + m.toLowerCase()), value);
+            });
+            parent.appendChild(circle);
+            return circle;
+        }
+
+        function drawLine(parent, x1, y1, x2, y2, style = {}) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            Object.entries(style).forEach(([key, value]) => {
+                line.setAttribute(key.replace(/[A-Z]/g, m => '-' + m.toLowerCase()), value);
+            });
+            parent.appendChild(line);
+            return line;
+        }
+
+        function addText(parent, x, y, text, style = {}) {
+            const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textEl.setAttribute('x', x);
+            textEl.setAttribute('y', y);
+            textEl.textContent = text;
+            Object.entries(style).forEach(([key, value]) => {
+                textEl.setAttribute(key.replace(/[A-Z]/g, m => '-' + m.toLowerCase()), value);
+            });
+            parent.appendChild(textEl);
+            return textEl;
+        }
+
+        function drawDimensionLine(parent, x1, y1, x2, y2, label, vertical = false) {
+            const color = '#e74c3c';
+            drawLine(parent, x1, y1, x2, y2, { stroke: color, strokeWidth: 1.5 });
+
+            if (!vertical) {
+                drawLine(parent, x1, y1, x1 + 8, y1 - 5, { stroke: color, strokeWidth: 1.5 });
+                drawLine(parent, x1, y1, x1 + 8, y1 + 5, { stroke: color, strokeWidth: 1.5 });
+                drawLine(parent, x2, y2, x2 - 8, y2 - 5, { stroke: color, strokeWidth: 1.5 });
+                drawLine(parent, x2, y2, x2 - 8, y2 + 5, { stroke: color, strokeWidth: 1.5 });
+                addText(parent, (x1 + x2) / 2, y1 - 10, label, 
+                    { fontSize: 12, fill: color, textAnchor: 'middle', fontWeight: 'bold' });
+            } else {
+                drawLine(parent, x1, y1, x1 - 5, y1 + 8, { stroke: color, strokeWidth: 1.5 });
+                drawLine(parent, x1, y1, x1 + 5, y1 + 8, { stroke: color, strokeWidth: 1.5 });
+                drawLine(parent, x2, y2, x2 - 5, y2 - 8, { stroke: color, strokeWidth: 1.5 });
+                drawLine(parent, x2, y2, x2 + 5, y2 - 8, { stroke: color, strokeWidth: 1.5 });
+                const textEl = addText(parent, x1 + 15, (y1 + y2) / 2, label, 
+                    { fontSize: 12, fill: color, textAnchor: 'middle', fontWeight: 'bold' });
+                textEl.setAttribute('transform', `rotate(-90, ${x1 + 15}, ${(y1 + y2) / 2})`);
+            }
+        }
+
+        function addTitleBlock(svg, title, scale, x, y) {
+            const today = new Date().toISOString().split('T')[0];
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            
+            drawRect(g, x, y, 300, 60, { fill: 'white', stroke: '#000', strokeWidth: 2 });
+            addText(g, x + 10, y + 20, title, { fontSize: 14, fontWeight: 'bold' });
+            addText(g, x + 10, y + 38, scale, { fontSize: 11 });
+            addText(g, x + 10, y + 52, `도면일자: ${today}`, { fontSize: 9, fill: '#666' });
+            
+            svg.appendChild(g);
+        }
+
+        function addLeaderNote(parent, textX, textY, text, targetX, targetY) {
+            drawLine(parent, targetX, targetY, textX - 10, textY,
+                { stroke: '#e74c3c', strokeWidth: 1.5 });
+            
+            const lines = text.split('\n');
+            const boxWidth = 140;
+            const lineHeight = 12;
+            const boxHeight = lines.length * lineHeight + 8;
+            
+            drawRect(parent, textX, textY - boxHeight / 2, boxWidth, boxHeight,
+                { fill: 'rgba(255,255,255,0.95)', stroke: '#e74c3c', strokeWidth: 1 });
+            
+            lines.forEach((line, i) => {
+                addText(parent, textX + 5, textY - boxHeight / 2 + 12 + i * lineHeight, line,
+                    { fontSize: 9, fill: '#000', textAnchor: 'start' });
+            });
+        }
+
+        function drawCompass(svg, x, y) {
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            drawCircle(g, x, y, 35, { fill: 'white', stroke: '#000', strokeWidth: 2 });
+            
+            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            arrow.setAttribute('d', `M ${x},${y-25} L ${x-8},${y+10} L ${x},${y} L ${x+8},${y+10} Z`);
+            arrow.setAttribute('fill', '#e74c3c');
+            arrow.setAttribute('stroke', '#000');
+            arrow.setAttribute('stroke-width', '1');
+            g.appendChild(arrow);
+            
+            addText(g, x, y - 28, 'N', { fontSize: 14, fontWeight: 'bold', textAnchor: 'middle' });
+            svg.appendChild(g);
+        }
+
+        // 정보 업데이트
+        function updateInfo() {
+            const frontBays = currentConfig.frontBays;
+            const sideBays = currentConfig.sideBays;
+            const buildingWidth = frontBays * CONSTANTS.BAY_SIZE;
+            const buildingDepth = sideBays * CONSTANTS.BAY_SIZE;
+            const area = (buildingWidth * buildingDepth) / 1000000;
+            const columns = (frontBays + 1) * (sideBays + 1);
+            const roofHeight = buildingWidth * CONSTANTS.ROOF_HEIGHT_RATIO;
+            const totalHeight = CONSTANTS.BASE_HEIGHT + CONSTANTS.COLUMN_HEIGHT + roofHeight;
+
+            document.getElementById('planFrontLength').textContent = `${buildingWidth.toLocaleString()}mm`;
+            document.getElementById('planSideLength').textContent = `${buildingDepth.toLocaleString()}mm`;
+            document.getElementById('planArea').textContent = `${area.toFixed(2)}m²`;
+            document.getElementById('planColumns').textContent = `${columns}개`;
+
+            document.getElementById('sectionTotal').textContent = `${totalHeight.toFixed(0)}mm`;
+            document.getElementById('sectionRoof').textContent = getRoofTypeName(currentConfig.roofType);
+        }
+
+        function getRoofTypeName(type) {
+            const names = { palgak: '팔작지붕', matbae: '맞배지붕', woojin: '우진각지붕' };
+            return names[type] || type;
+        }
+
+        // 다운로드 함수
+        function downloadPNG(viewType) {
+            const svgId = viewType === 'plan' ? 'planSvg' : 'sectionSvg';
+            const svg = document.getElementById(svgId);
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+
+            img.onload = function() {
+                canvas.width = svg.getAttribute('width');
+                canvas.height = svg.getAttribute('height');
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+
+                canvas.toBlob(function(blob) {
+                    const date = new Date().toISOString().split('T')[0];
+                    const filename = `정자_${viewType === 'plan' ? '평면도' : '단면도'}_정면${currentConfig.frontBays}칸_측면${currentConfig.sideBays}칸_${date}.png`;
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    link.click();
+                });
+
+                URL.revokeObjectURL(url);
+            };
+
+            img.src = url;
+        }
+
+        function downloadPDF() {
+            window.print();
+        }
+
+        // 초기 도면 생성
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('한옥 정자 설계 시스템 초기화 중...');
+            generateDrawings();
+            console.log('도면 생성 완료!');
+        });
+    </script>
+</body>
+</html>

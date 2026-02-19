@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Clone</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #0f0f0f;
+            color: #fff;
+        }
+
+        /* 헤더 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background-color: #0f0f0f;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 1000;
+            border-bottom: 1px solid #333;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .menu-icon:hover {
+            background-color: #272727;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #ff0000;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .header-center {
+            flex: 1;
+            max-width: 640px;
+            margin: 0 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container {
+            display: flex;
+            width: 100%;
+        }
+
+        .search-input {
+            flex: 1;
+            height: 40px;
+            background-color: #121212;
+            border: 1px solid #303030;
+            border-radius: 40px 0 0 40px;
+            padding: 0 16px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1c62b9;
+        }
+
+        .search-button {
+            width: 64px;
+            height: 40px;
+            background-color: #222222;
+            border: 1px solid #303030;
+            border-left: none;
+            border-radius: 0 40px 40px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-button:hover {
+            background-color: #333;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .icon-button:hover {
+            background-color: #272727;
+        }
+
+        /* 배너 */
+        .channel-banner {
+            margin-top: 56px;
+            width: 100%;
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .channel-info {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            background-color: #0f0f0f;
+        }
+
+        .channel-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #ff0000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .channel-details h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .channel-stats {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .subscribe-button {
+            margin-left: auto;
+            background-color: #cc0000;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .subscribe-button:hover {
+            background-color: #b00000;
+        }
+
+        /* 탭 네비게이션 */
+        .tabs {
+            display: flex;
+            gap: 32px;
+            padding: 0 24px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            padding: 14px 0;
+            cursor: pointer;
+            color: #aaa;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        .tab:hover {
+            color: #fff;
+        }
+
+        /* 비디오 그리드 */
+        .videos-container {
+            padding: 0 24px 24px;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            max-width: 2000px;
+            margin: 0 auto;
+        }
+
+        .video-card {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        .video-card:hover {
+            transform: scale(1.02);
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background-color: #222;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 3px 4px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .video-info {
+            display: flex;
+            gap: 12px;
+            padding: 12px 0;
+        }
+
+        .video-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #ff0000;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .video-details {
+            flex: 1;
+        }
+
+        .video-title {
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 4px;
+            color: #fff;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .video-channel {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 2px;
+        }
+
+        .video-metadata {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        @media (max-width: 768px) {
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-center {
+                margin: 0 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const videosData = [
+            {
+                id: 1,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2001.png",
+                title: "React 완벽 가이드 - 기초부터 시작하기 | 무료 강의 01강",
+                channel: "코딩마스터",
+                views: "15만",
+                uploadTime: "3개월 전",
+                duration: "24:15",
+                url: "https://www.youtube.com/watch?v=NTxvB6zFh0Q&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=16&pp=iAQB"
+            },
+            {
+                id: 2,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2002.png",
+                title: "React Hooks 완전정복 - useState와 useEffect 이해하기 | 무료 강의 02강",
+                channel: "코딩마스터",
+                views: "12만",
+                uploadTime: "2개월 전",
+                duration: "28:42",
+                url: "https://www.youtube.com/watch?v=2Or4ciaoZns&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=15&pp=iAQB"
+            },
+            {
+                id: 3,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2003.png",
+                title: "컴포넌트 디자인 패턴과 재사용성 높이는 방법 | 무료 강의 03강",
+                channel: "코딩마스터",
+                views: "10만",
+                uploadTime: "2개월 전",
+                duration: "32:18",
+                url: "https://www.youtube.com/watch?v=PCcfVk6t72Y&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=14&pp=iAQB"
+            },
+            {
+                id: 4,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2004.png",
+                title: "React Router로 SPA 구현하기 - 라우팅 완벽 마스터 | 무료 강의 04강",
+                channel: "코딩마스터",
+                views: "9만",
+                uploadTime: "7주 전",
+                duration: "26:55",
+                url: "https://www.youtube.com/watch?v=tfoFpnQB0vg&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=13&pp=iAQB"
+            },
+            {
+                id: 5,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2005.png",
+                title: "상태 관리 라이브러리 비교 - Redux vs Zustand vs Context API | 무료 강의 05강",
+                channel: "코딩마스터",
+                views: "11만",
+                uploadTime: "6주 전",
+                duration: "35:20",
+                url: "https://www.youtube.com/watch?v=19NFGrC-eIE&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=12&pp=iAQB"
+            },
+            {
+                id: 6,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2006.png",
+                title: "React 성능 최적화 테크닉 - useMemo, useCallback 활용법 | 무료 강의 06강",
+                channel: "코딩마스터",
+                views: "8만",
+                uploadTime: "5주 전",
+                duration: "29:47",
+                url: "https://www.youtube.com/watch?v=m7fKeI7T_rI&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=11&pp=iAQB"
+            },
+            {
+                id: 7,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2007.png",
+                title: "실전 프로젝트로 배우는 React - Todo 앱 만들기 | 무료 강의 07강",
+                channel: "코딩마스터",
+                views: "13만",
+                uploadTime: "4주 전",
+                duration: "41:33",
+                url: "https://www.youtube.com/watch?v=kluaf2kpRFg&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=10&pp=iAQB"
+            },
+            {
+                id: 8,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2008.png",
+                title: "API 연동과 비동기 처리 - fetch, axios 완벽 가이드 | 무료 강의 08강",
+                channel: "코딩마스터",
+                views: "7만",
+                uploadTime: "3주 전",
+                duration: "27:12",
+                url: "https://www.youtube.com/watch?v=KPeGpCb0gqo&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=9&pp=iAQB0gcJCQMKAYcqIYzv"
+            },
+            {
+                id: 9,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2009.png",
+                title: "React와 TypeScript로 타입 안정성 높이기 | 무료 강의 09강",
+                channel: "코딩마스터",
+                views: "9만",
+                uploadTime: "2주 전",
+                duration: "38:08",
+                url: "https://www.youtube.com/watch?v=FG65trEdlKg&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=8&pp=iAQB"
+            },
+            {
+                id: 10,
+                thumbnail: "%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%84%AC%EB%84%A4%EC%9D%BC%2010.png",
+                title: "React 프로젝트 배포하기 - Vercel, Netlify 완벽 가이드 | 무료 강의 10강",
+                channel: "코딩마스터",
+                views: "6만",
+                uploadTime: "1주 전",
+                duration: "22:45",
+                url: "https://www.youtube.com/watch?v=-Uy_ciFJkVQ&list=PLruehM1HUSC-6ojdXMUIpIGhuP7ajp9m6&index=7&pp=iAQB"
+            }
+        ];
+
+        function Header() {
+            return (
+                <div className="header">
+                    <div className="header-left">
+                        <div className="menu-icon">☰</div>
+                        <div className="logo">
+                            <div className="logo-icon">▶</div>
+                            <span>YouTube</span>
+                        </div>
+                    </div>
+                    <div className="header-center">
+                        <div className="search-container">
+                            <input
+                                type="text"
+                                className="search-input"
+                                placeholder="검색"
+                            />
+                            <button className="search-button">🔍</button>
+                        </div>
+                    </div>
+                    <div className="header-right">
+                        <div className="icon-button">📹</div>
+                        <div className="icon-button">🔔</div>
+                        <div className="icon-button">👤</div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ChannelHeader() {
+            return (
+                <>
+                    <div
+                        className="channel-banner"
+                        style={{ backgroundImage: 'url("%EC%9C%A0%ED%8A%9C%EB%B8%8C%20%EC%B1%84%EB%84%90%20%EB%B0%B1%EA%B7%B8%EB%9D%BC%EC%9A%B4%EB%93%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80.png")' }}
+                    ></div>
+                    <div className="channel-info">
+                        <div className="channel-avatar">CM</div>
+                        <div className="channel-details">
+                            <h1>코딩마스터</h1>
+                            <div className="channel-stats">
+                                구독자 125만명 · 동영상 243개
+                            </div>
+                        </div>
+                        <button className="subscribe-button">구독</button>
+                    </div>
+                    <div className="tabs">
+                        <div className="tab">홈</div>
+                        <div className="tab active">동영상</div>
+                        <div className="tab">재생목록</div>
+                        <div className="tab">커뮤니티</div>
+                        <div className="tab">정보</div>
+                    </div>
+                </>
+            );
+        }
+
+        function VideoCard({ video }) {
+            const handleClick = () => {
+                window.open(video.url, '_blank');
+            };
+
+            return (
+                <div className="video-card" onClick={handleClick}>
+                    <div className="video-thumbnail">
+                        <img src={video.thumbnail} alt={video.title} />
+                        <div className="video-duration">{video.duration}</div>
+                    </div>
+                    <div className="video-info">
+                        <div className="video-avatar">CM</div>
+                        <div className="video-details">
+                            <div className="video-title">{video.title}</div>
+                            <div className="video-channel">{video.channel}</div>
+                            <div className="video-metadata">
+                                조회수 {video.views}회 · {video.uploadTime}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function App() {
+            return (
+                <div>
+                    <Header />
+                    <ChannelHeader />
+                    <div className="videos-container">
+                        <div className="videos-grid">
+                            {videosData.map(video => (
+                                <VideoCard key={video.id} video={video} />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

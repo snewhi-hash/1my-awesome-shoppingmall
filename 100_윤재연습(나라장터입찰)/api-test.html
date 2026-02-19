@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 키 테스트 - 나라장터</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .steps {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .steps ol {
+            margin-left: 20px;
+        }
+        .steps li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .url-test {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 나라장터 API 키 검증 도구</h1>
+        
+        <div class="steps">
+            <h2>⚠️ API 500 에러 해결 방법</h2>
+            <p><strong>현재 상황:</strong> API 호출 시 "HTTP Error 500: Internal Server Error" 발생</p>
+            <p><strong>주요 원인:</strong></p>
+            <ol>
+                <li><strong>API 사용 신청이 아직 승인되지 않음</strong> (가장 흔한 원인)
+                    <ul>
+                        <li>공공데이터포털에서 신청 후 보통 1-2일 소요</li>
+                        <li>승인 전에는 API 호출이 불가능합니다</li>
+                    </ul>
+                </li>
+                <li><strong>잘못된 API 키 사용</strong>
+                    <ul>
+                        <li>일반인증키(Encoding)와 일반인증키(Decoding) 중 올바른 키 사용</li>
+                        <li>공백이나 특수문자가 포함되지 않았는지 확인</li>
+                    </ul>
+                </li>
+                <li><strong>잘못된 API 서비스명</strong>
+                    <ul>
+                        <li>"조달청_나라장터 낙찰정보서비스"를 신청했는지 확인</li>
+                        <li>다른 서비스(예: 입찰공고)를 신청한 경우 다른 엔드포인트 사용</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>📋 1. API 승인 상태 확인하기</h2>
+            <ol>
+                <li><a href="https://www.data.go.kr/mypage/opened" target="_blank">공공데이터포털 마이페이지</a> 접속</li>
+                <li>"오픈API > 개발계정 상세현황" 메뉴 클릭</li>
+                <li>"조달청_나라장터" 관련 API의 <strong>승인상태</strong> 확인</li>
+                <li>승인상태가 "승인"이 아니면 API 사용 불가</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>🔑 2. API 키 직접 테스트</h2>
+            <p>아래에 API 키를 입력하고 브라우저에서 직접 테스트하세요:</p>
+            
+            <label><strong>API 키 (serviceKey):</strong></label>
+            <input type="text" id="apiKey" value="bc134c1e68c9a1d1ed5f78b48e456f28030909af300112e2c93ca8af4fd9ca41" 
+                   placeholder="공공데이터포털에서 발급받은 API 키">
+            
+            <button onclick="generateTestUrls()">테스트 URL 생성</button>
+            <button onclick="testInNewWindow()">새 창에서 직접 테스트</button>
+            
+            <div id="testUrls"></div>
+        </div>
+
+        <div class="section">
+            <h2>📞 3. 사용 가능한 대체 방법</h2>
+            <ol>
+                <li><strong>API 승인 대기 중:</strong>
+                    <ul>
+                        <li>조달청 콜센터: 1588-0800</li>
+                        <li>공공데이터포털 문의: 1661-2966</li>
+                    </ul>
+                </li>
+                <li><strong>즉시 사용하려면:</strong>
+                    <ul>
+                        <li><a href="https://www.g2b.go.kr/" target="_blank">나라장터 웹사이트</a>에서 직접 검색</li>
+                        <li>수동으로 데이터 확인 및 수집</li>
+                    </ul>
+                </li>
+                <li><strong>다른 API 서비스:</strong>
+                    <ul>
+                        <li>"조달청_나라장터 입찰공고서비스" 신청 (별도 서비스)</li>
+                        <li>각 서비스마다 별도 신청 및 승인 필요</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>✅ 4. 올바른 API 신청 방법</h2>
+            <ol>
+                <li><a href="https://www.data.go.kr/" target="_blank">공공데이터포털</a> 접속 및 로그인</li>
+                <li>검색창에 <strong>"나라장터"</strong> 검색</li>
+                <li>필요한 서비스 선택:
+                    <ul>
+                        <li><strong>조달청_나라장터 낙찰정보서비스</strong> (낙찰/개찰 결과 조회)</li>
+                        <li><strong>조달청_나라장터 입찰공고서비스</strong> (입찰 공고 조회)</li>
+                    </ul>
+                </li>
+                <li>"활용신청" 버튼 클릭</li>
+                <li>상세기능정보에서 필요한 API 선택 (예: "개찰결과 용역 목록조회")</li>
+                <li>활용목적 작성 후 신청</li>
+                <li><strong>1-2일 대기</strong> (승인 완료 후 이메일 알림)</li>
+                <li>승인 후 "마이페이지"에서 인증키 확인</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function generateTestUrls() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                alert('API 키를 입력해주세요.');
+                return;
+            }
+
+            const endpoints = [
+                {
+                    name: '개찰결과 용역 목록조회',
+                    url: 'https://apis.data.go.kr/1230000/ScsbidInfoService/getOpengResultListInfoServc'
+                },
+                {
+                    name: '검색조건별 개찰결과 조회',
+                    url: 'https://apis.data.go.kr/1230000/ScsbidInfoService/getOpengResultListInfoServcPPSSrch'
+                },
+                {
+                    name: '입찰공고 목록조회',
+                    url: 'https://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc'
+                }
+            ];
+
+            let html = '<div class="info result"><strong>📡 아래 URL을 클릭하여 브라우저에서 직접 테스트하세요:</strong><br><br>';
+
+            endpoints.forEach((endpoint, index) => {
+                const testUrl = `${endpoint.url}?serviceKey=${apiKey}&numOfRows=10&pageNo=1&type=json`;
+                html += `<div class="url-test">
+                    <strong>${index + 1}. ${endpoint.name}</strong><br>
+                    <a href="${testUrl}" target="_blank">🔗 새 창에서 열기</a><br>
+                    <small style="color: #666;">${testUrl}</small>
+                </div>`;
+            });
+
+            html += '<br><strong>✅ 정상 응답:</strong> {"response":{"header":{"resultCode":"00",...}<br>';
+            html += '<strong>❌ 오류 응답:</strong> "Unexpected errors", HTTP 500, 인증키 오류 등</div>';
+
+            document.getElementById('testUrls').innerHTML = html;
+        }
+
+        function testInNewWindow() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                alert('API 키를 입력해주세요.');
+                return;
+            }
+
+            const testUrl = `https://apis.data.go.kr/1230000/ScsbidInfoService/getOpengResultListInfoServc?serviceKey=${apiKey}&numOfRows=10&pageNo=1&type=json`;
+            window.open(testUrl, '_blank');
+        }
+
+        // 페이지 로드 시 자동으로 URL 생성
+        window.onload = function() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (apiKey && apiKey !== 'bc134c1e68c9a1d1ed5f78b48e456f28030909af300112e2c93ca8af4fd9ca41') {
+                generateTestUrls();
+            }
+        };
+    </script>
+</body>
+</html>
